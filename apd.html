@@ -247,6 +247,40 @@ img.wp-smiley, img.emoji {
     background: none !important;
     padding: 0 !important;
 }
+/* A wrapper around the link so we can anchor the arrow to it */
+.menu-link-wrapper {
+  position: relative !important;
+}
+
+/* The megamenu <li> can remain position: static for full-width layouts */
+#grve-main-menu.grve-horizontal-menu .grve-wrapper > ul > li.megamenu {
+  position: static !important;
+}
+
+/* Style for the submenu toggle button */
+.submenu-toggle {
+  position: absolute !important;
+  right: 3px;        /* Adjust horizontal spacing as needed */
+  top: 30%;
+  transform: translateY(-200%);
+  opacity: 0;
+  transition: opacity 0.4s !important;
+  background: none;
+  border: none;
+  font-size: 0.3rem !important;
+  line-height: 1;
+  padding: 0.25rem !important;
+}
+
+/* When the button receives focus, make it visible with a border and caret */
+.submenu-toggle:focus {
+  opacity: 1;
+  border: 1px solid #000;
+  background: #fff !important;
+  color: #000 !important;
+  padding: 5px !important;
+}
+
 /* Initially hide submenus */
 .sub-menu {
   opacity: 0;
@@ -352,103 +386,120 @@ unicode-range: U+F004-F005,U+F007,U+F017,U+F022,U+F024,U+F02E,U+F03E,U+F044,U+F0
     });
     </script>
     
-    <script>
-    
-    document.addEventListener('DOMContentLoaded', function () {
-      // Get the main menu UL by its ID (adjust if needed).
-      var mainMenu = document.getElementById('menu-home-page');
-      if (!mainMenu) return;
-    
-      // Select all top-level menu items that have submenus.
-      var topLevelItems = mainMenu.querySelectorAll(':scope > li.menu-item-has-children');
-    
-      topLevelItems.forEach(function (item) {
-        var link = item.querySelector('a');
-    
-        // Reset the state on page load.
-        item.classList.remove('expanded', 'mHover');
-        if (link) {
-          link.setAttribute('aria-expanded', 'false');
-        }
-    
-        // --- Mouse Hover Handling ---
-        // When the mouse enters, set a flag and expand the submenu.
-        item.addEventListener('mouseenter', function () {
-          item.dataset.hovering = "true";
-          item.classList.add('expanded', 'mHover');
-          if (link) {
-            link.setAttribute('aria-expanded', 'true');
-          }
-        });
-    
-        // When the mouse leaves, clear the flag and collapse the submenu.
-        item.addEventListener('mouseleave', function () {
-          item.dataset.hovering = "false";
-          item.classList.remove('expanded', 'mHover');
-          if (link) {
-            link.setAttribute('aria-expanded', 'false');
-          }
-        });
-    
-        // --- Keyboard Handling ---
-        // When the top-level link receives focus, expand the submenu.
-        if (link) {
-          link.addEventListener('focus', function () {
-            // Only expand if not already expanded.
-            if (!item.classList.contains('expanded')) {
-              item.classList.add('expanded', 'mHover');
-              link.setAttribute('aria-expanded', 'true');
-            }
-          });
-        }
-    
-        // Intercept the Enter key so that if the submenu is not yet expanded,
-        // it expands instead of following the link.
-        if (link) {
-          link.addEventListener('keydown', function (e) {
-            if ((e.key === 'Enter' || e.keyCode === 13) && !item.classList.contains('expanded')) {
-              e.preventDefault();
-              item.classList.add('expanded', 'mHover');
-              link.setAttribute('aria-expanded', 'true');
-              // Focus remains on the link so that Tab moves into the submenu naturally.
-            }
-          });
-        }
-    
-        // Intercept a click so that if the submenu is not expanded, it expands.
-        if (link) {
-          link.addEventListener('click', function (e) {
-            // If the link's destination is "#" or empty, assume it’s just a toggle.
-            var href = link.getAttribute('href');
-            if ((href === '#' || href === '') && !item.classList.contains('expanded')) {
-              e.preventDefault();
-              item.classList.add('expanded', 'mHover');
-              link.setAttribute('aria-expanded', 'true');
-            }
-          });
-        }
-    
-        // --- Auto-Collapse on Focus Out ---
-        // When focus leaves the entire menu item (and its submenu),
-        // collapse it only if the mouse is not hovering.
-        item.addEventListener('focusout', function () {
-          setTimeout(function () {
-            // If no element inside the item is focused…
-            if (!item.contains(document.activeElement)) {
-              // ...and if the mouse is not hovering over the item…
-              if (item.dataset.hovering !== "true") {
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          // Select all UL elements where the ID starts with "menu-"
+          var menus = document.querySelectorAll('ul[id^="menu-"]');
+          if (!menus.length) return;
+        
+          menus.forEach(function (mainMenu) {
+            // Select all top-level menu items that have submenus
+            var topLevelItems = mainMenu.querySelectorAll(':scope > li.menu-item-has-children');
+        
+            topLevelItems.forEach(function (item) {
+              var link = item.querySelector('a'); // Get the main menu link
+              var subMenu = item.querySelector('ul'); // Get the submenu <ul>
+        
+              // Remove any expanded or hover states on load
+              item.classList.remove('expanded', 'mHover');
+              if (link) {
+                link.setAttribute('aria-expanded', 'false');
+              }
+        
+              // --- Mouse Hover Handling (Optional) ---
+              item.addEventListener('mouseenter', function () {
+                item.dataset.hovering = "true";
+                item.classList.add('expanded', 'mHover');
+                if (link) {
+                  link.setAttribute('aria-expanded', 'true');
+                }
+              });
+              item.addEventListener('mouseleave', function () {
+                item.dataset.hovering = "false";
                 item.classList.remove('expanded', 'mHover');
                 if (link) {
                   link.setAttribute('aria-expanded', 'false');
                 }
+              });
+        
+              // --- Create the Toggle Button (Down Arrow) ---
+              var toggleButton = document.createElement('button');
+              toggleButton.classList.add('submenu-toggle');
+              toggleButton.innerHTML = '▼'; // Arrow icon
+              toggleButton.setAttribute('aria-label', 'Toggle submenu');
+              toggleButton.setAttribute('aria-expanded', 'false');
+        
+              // When the button is clicked (or Enter is pressed), toggle the submenu
+              toggleButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                var isExpanded = item.classList.contains('expanded');
+                if (!isExpanded) {
+                  // Expand submenu
+                  item.classList.add('expanded', 'mHover');
+                  toggleButton.setAttribute('aria-expanded', 'true');
+                  if (link) {
+                    link.setAttribute('aria-expanded', 'true');
+                  }
+                  var firstSubItem = item.querySelector('ul li a');
+                  if (firstSubItem) {
+                    firstSubItem.focus();
+                  }
+                  toggleButton.style.display = 'none'; // Hide button when submenu is open
+                } else {
+                  // Collapse submenu
+                  item.classList.remove('expanded', 'mHover');
+                  toggleButton.setAttribute('aria-expanded', 'false');
+                  if (link) {
+                    link.setAttribute('aria-expanded', 'false');
+                  }
+                  toggleButton.style.display = 'block'; // Show button when submenu is closed
+                }
+              });
+        
+              // Keyboard: pressing Enter also triggers click
+              toggleButton.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  toggleButton.click();
+                }
+              });
+        
+              // --- Create a Wrapper ONLY for the Button (Not the Link) ---
+              var buttonWrapper = document.createElement('div');
+              buttonWrapper.classList.add('menu-link-wrapper');
+              buttonWrapper.style.position = 'relative'; // Anchor for absolute positioning
+        
+              // Insert the button inside the wrapper
+              buttonWrapper.appendChild(toggleButton);
+        
+              // Insert the wrapper just before the submenu <ul>, so it's aligned properly
+              if (subMenu) {
+                item.insertBefore(buttonWrapper, subMenu);
+              } else {
+                item.appendChild(buttonWrapper);
               }
-            }
-          }, 0);
+        
+              // --- Focus Out Handling ---
+              item.addEventListener('focusout', function () {
+                setTimeout(function () {
+                  if (!item.contains(document.activeElement)) {
+                    if (item.dataset.hovering !== "true") {
+                      item.classList.remove('expanded', 'mHover');
+                      if (link) {
+                        link.setAttribute('aria-expanded', 'false');
+                      }
+                      toggleButton.setAttribute('aria-expanded', 'false');
+                      toggleButton.style.display = 'block';
+                    }
+                  }
+                }, 0);
+              });
+            });
+          });
         });
-      });
-    });
-       
-    </script>    
+        
+        
+        </script>   
 <script type="text/javascript" src="//apd.lacounty.gov/wp-content/plugins/site-search/searchbar-injection.js?ver=1.0.0" id="script-handle-js"></script>
 <script type="text/javascript" src="//apd.lacounty.gov/wp-content/plugins/google-analytics-for-wordpress/assets/js/frontend-gtag.min.js?ver=9.2.4" id="monsterinsights-frontend-script-js" async="async" data-wp-strategy="async"></script>
 <script data-cfasync="false" data-wpfc-render="false" type="text/javascript" id="monsterinsights-frontend-script-js-extra">/* <![CDATA[ */

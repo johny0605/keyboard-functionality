@@ -348,6 +348,42 @@ img.wp-smiley, img.emoji {
     background: none !important;
     padding: 0 !important;
 }
+
+/* A wrapper around the link so we can anchor the arrow to it */
+.menu-link-wrapper {
+  position: relative !important;
+}
+
+/* The megamenu <li> can remain position: static for full-width layouts */
+#grve-main-menu.grve-horizontal-menu .grve-wrapper > ul > li.megamenu {
+  position: static !important;
+}
+
+/* Style for the submenu toggle button */
+.submenu-toggle {
+  position: absolute !important;
+  right: -10px;        /* Adjust horizontal spacing as needed */
+  top: 30%;
+  transform: translateY(-200%);
+  opacity: 0;
+  transition: opacity 0.4s !important;
+  background: none;
+  border: none;
+  font-size: 0.3rem !important;
+  line-height: 1;
+  padding: 0.25rem !important;
+}
+
+/* When the button receives focus, make it visible with a border and caret */
+.submenu-toggle:focus {
+  opacity: 1;
+  border: 1px solid #000;
+  background: #fff !important;
+  color: #000 !important;
+  padding: 5px !important;
+}
+
+
 </style>
 <link rel="stylesheet" id="wp-block-library-css" href="https://ceo.lacounty.gov/wp-includes/css/dist/block-library/style.min.css?ver=6.6.1" type="text/css" media="all">
 <style id="classic-theme-styles-inline-css" type="text/css">
@@ -432,135 +468,6 @@ var siteurl = "https:\/\/ceo.lacounty.gov\/";
 jQuery(document).ready(function($){});
 /* ]]> */
 </script>
-<script>
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Select all UL elements where the ID starts with "menu-" and have class "sub-menu"
-    var menus = document.querySelectorAll('ul[id^="menu-"], ul.sub-menu');
-
-    if (!menus.length) return;
-
-    menus.forEach(function (mainMenu) {
-        // Select all top-level menu items
-        var topLevelItems = mainMenu.querySelectorAll(':scope > li');
-
-        topLevelItems.forEach(function (item) {
-            var link = item.querySelector('a');
-            var hasSubmenu = item.classList.contains('menu-item-has-children');
-
-            // Reset the state on page load.
-            item.classList.remove('expanded', 'mHover');
-            if (link) {
-                link.setAttribute('aria-expanded', 'false');
-            }
-
-            // --- Mouse Hover Handling (Only for items with submenus) ---
-            if (hasSubmenu) {
-                item.addEventListener('mouseenter', function () {
-                    item.dataset.hovering = "true";
-                    item.classList.add('expanded', 'mHover');
-                    if (link) {
-                        link.setAttribute('aria-expanded', 'true');
-                    }
-                });
-
-                item.addEventListener('mouseleave', function () {
-                    item.dataset.hovering = "false";
-                    item.classList.remove('expanded', 'mHover');
-                    if (link) {
-                        link.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            }
-
-            // --- Keyboard Handling (For all items) ---
-            if (link) {
-                link.addEventListener('focus', function () {
-                    if (!item.classList.contains('expanded') && hasSubmenu) {
-                        item.classList.add('expanded', 'mHover');
-                        link.setAttribute('aria-expanded', 'true');
-                    }
-                });
-
-                link.addEventListener('keydown', function (event) {
-                    if (event.key === 'ArrowDown') {
-                        event.preventDefault();
-                        focusNextMenuItem(item);
-                    } else if (event.key === 'ArrowUp') {
-                        event.preventDefault();
-                        focusPreviousMenuItem(item);
-                    } else if ((event.key === 'Enter' || event.key === ' ') && hasSubmenu) {
-                        event.preventDefault();
-                        item.classList.toggle('expanded');
-                        item.classList.toggle('mHover');
-                        link.setAttribute('aria-expanded', item.classList.contains('expanded') ? 'true' : 'false');
-                    }
-                });
-
-                link.addEventListener('click', function (e) {
-                    var href = link.getAttribute('href');
-                    if ((href === '#' || href === '') && hasSubmenu && !item.classList.contains('expanded')) {
-                        e.preventDefault();
-                        item.classList.add('expanded', 'mHover');
-                        link.setAttribute('aria-expanded', 'true');
-                    }
-                });
-            }
-
-            // Ensure blur (focus out) collapses only when needed
-            item.addEventListener('focusout', function () {
-                setTimeout(function () {
-                    if (!item.contains(document.activeElement)) {
-                        if (item.dataset.hovering !== "true") {
-                            item.classList.remove('expanded', 'mHover');
-                            if (link) {
-                                link.setAttribute('aria-expanded', 'false');
-                            }
-                        }
-                    }
-                }, 0);
-            });
-        });
-
-        // --- Extract Unique Menu Items with class="menu" Only ---
-        var uniqueMenuItems = new Set();
-        var menuItems = mainMenu.querySelectorAll('li.menu'); // Select only <li class="menu">
-
-        menuItems.forEach(function (item) {
-            var text = item.textContent.trim();
-            if (text) {
-                uniqueMenuItems.add(text);
-            }
-        });
-
-        // Convert to an array and log it
-        console.log(Unique menu items in ${mainMenu.id}:, Array.from(uniqueMenuItems));
-    });
-
-    // --- Helper Functions for Keyboard Navigation ---
-    function focusNextMenuItem(currentItem) {
-        let nextItem = currentItem.nextElementSibling;
-        while (nextItem && !nextItem.querySelector('a')) {
-            nextItem = nextItem.nextElementSibling;
-        }
-        if (nextItem) {
-            nextItem.querySelector('a').focus();
-        }
-    }
-
-    function focusPreviousMenuItem(currentItem) {
-        let prevItem = currentItem.previousElementSibling;
-        while (prevItem && !prevItem.querySelector('a')) {
-            prevItem = prevItem.previousElementSibling;
-        }
-        if (prevItem) {
-            prevItem.querySelector('a').focus();
-        }
-    }
-});
-
-
-</script>
 <script></script><link rel="https://api.w.org/" href="https://ceo.lacounty.gov/wp-json/"><link rel="alternate" title="JSON" type="application/json" href="https://ceo.lacounty.gov/wp-json/wp/v2/pages/15284"><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://ceo.lacounty.gov/xmlrpc.php?rsd">
 <link rel="canonical" href="https://ceo.lacounty.gov/policy-implementation-and-alignment/">
 <link rel="shortlink" href="https://ceo.lacounty.gov/?p=15284">
@@ -579,102 +486,117 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- start Simple Custom CSS and JS -->
 <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function () {
-// Select all UL elements where the ID starts with "menu-"
-var menus = document.querySelectorAll('ul[id^="menu-"]');
+  // Select all UL elements where the ID starts with "menu-"
+  var menus = document.querySelectorAll('ul[id^="menu-"]');
+  if (!menus.length) return;
 
-if (!menus.length) return;
-
-menus.forEach(function (mainMenu) {
-    // Select all top-level menu items that have submenus.
+  menus.forEach(function (mainMenu) {
+    // Select all top-level menu items that have submenus
     var topLevelItems = mainMenu.querySelectorAll(':scope > li.menu-item-has-children');
 
     topLevelItems.forEach(function (item) {
-        var link = item.querySelector('a');
+      var link = item.querySelector('a'); // Get the main menu link
+      var subMenu = item.querySelector('ul'); // Get the submenu <ul>
 
-        // Reset the state on page load.
+      // Remove any expanded or hover states on load
+      item.classList.remove('expanded', 'mHover');
+      if (link) {
+        link.setAttribute('aria-expanded', 'false');
+      }
+
+      // --- Mouse Hover Handling (Optional) ---
+      item.addEventListener('mouseenter', function () {
+        item.dataset.hovering = "true";
+        item.classList.add('expanded', 'mHover');
+        if (link) {
+          link.setAttribute('aria-expanded', 'true');
+        }
+      });
+      item.addEventListener('mouseleave', function () {
+        item.dataset.hovering = "false";
         item.classList.remove('expanded', 'mHover');
         if (link) {
+          link.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // --- Create the Toggle Button (Down Arrow) ---
+      var toggleButton = document.createElement('button');
+      toggleButton.classList.add('submenu-toggle');
+      toggleButton.innerHTML = '▼'; // Arrow icon
+      toggleButton.setAttribute('aria-label', 'Toggle submenu');
+      toggleButton.setAttribute('aria-expanded', 'false');
+
+      // When the button is clicked (or Enter is pressed), toggle the submenu
+      toggleButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        var isExpanded = item.classList.contains('expanded');
+        if (!isExpanded) {
+          // Expand submenu
+          item.classList.add('expanded', 'mHover');
+          toggleButton.setAttribute('aria-expanded', 'true');
+          if (link) {
+            link.setAttribute('aria-expanded', 'true');
+          }
+          var firstSubItem = item.querySelector('ul li a');
+          if (firstSubItem) {
+            firstSubItem.focus();
+          }
+          toggleButton.style.display = 'none'; // Hide button when submenu is open
+        } else {
+          // Collapse submenu
+          item.classList.remove('expanded', 'mHover');
+          toggleButton.setAttribute('aria-expanded', 'false');
+          if (link) {
             link.setAttribute('aria-expanded', 'false');
+          }
+          toggleButton.style.display = 'block'; // Show button when submenu is closed
         }
+      });
 
-        // --- Mouse Hover Handling ---
-        item.addEventListener('mouseenter', function () {
-            item.dataset.hovering = "true";
-            item.classList.add('expanded', 'mHover');
-            if (link) {
-                link.setAttribute('aria-expanded', 'true');
-            }
-        });
+      // Keyboard: pressing Enter also triggers click
+      toggleButton.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          toggleButton.click();
+        }
+      });
 
-        item.addEventListener('mouseleave', function () {
-            item.dataset.hovering = "false";
-            item.classList.remove('expanded', 'mHover');
-            if (link) {
+      // --- Create a Wrapper ONLY for the Button (Not the Link) ---
+      var buttonWrapper = document.createElement('div');
+      buttonWrapper.classList.add('menu-link-wrapper');
+      buttonWrapper.style.position = 'relative'; // Anchor for absolute positioning
+
+      // Insert the button inside the wrapper
+      buttonWrapper.appendChild(toggleButton);
+
+      // Insert the wrapper just before the submenu <ul>, so it's aligned properly
+      if (subMenu) {
+        item.insertBefore(buttonWrapper, subMenu);
+      } else {
+        item.appendChild(buttonWrapper);
+      }
+
+      // --- Focus Out Handling ---
+      item.addEventListener('focusout', function () {
+        setTimeout(function () {
+          if (!item.contains(document.activeElement)) {
+            if (item.dataset.hovering !== "true") {
+              item.classList.remove('expanded', 'mHover');
+              if (link) {
                 link.setAttribute('aria-expanded', 'false');
+              }
+              toggleButton.setAttribute('aria-expanded', 'false');
+              toggleButton.style.display = 'block';
             }
-        });
-
-        // --- Keyboard Handling ---
-        if (link) {
-            link.addEventListener('focus', function () {
-                if (!item.classList.contains('expanded')) {
-                    item.classList.add('expanded', 'mHover');
-                    link.setAttribute('aria-expanded', 'true');
-                }
-            });
-
-            link.addEventListener('keydown', (event) => {
-                if (event.key === 'ArrowDown') {
-                    event.preventDefault();
-                    focusNextMenuItem(index);
-                } else if (event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    focusPreviousMenuItem(index);
-                } else if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    showSubMenu(event);
-                }
-            });
-
-            link.addEventListener('click', function (e) {
-                var href = link.getAttribute('href');
-                if ((href === '#' || href === '') && !item.classList.contains('expanded')) {
-                    e.preventDefault();
-                    item.classList.add('expanded', 'mHover');
-                    link.setAttribute('aria-expanded', 'true');
-                }
-            });
-        }
-
-        item.addEventListener('focusout', function () {
-            setTimeout(function () {
-                if (!item.contains(document.activeElement)) {
-                    if (item.dataset.hovering !== "true") {
-                        item.classList.remove('expanded', 'mHover');
-                        if (link) {
-                            link.setAttribute('aria-expanded', 'false');
-                        }
-                    }
-                }
-            }, 0);
-        });
+          }
+        }, 0);
+      });
     });
-
-    // --- Extract Unique Menu Items with class="menu" Only ---
-    var uniqueMenuItems = new Set();
-    var menuItems = mainMenu.querySelectorAll('li.menu'); // Select only <li class="menu">
-
-    menuItems.forEach(function (item) {
-        var text = item.textContent.trim();
-        if (text) {
-            uniqueMenuItems.add(text);
-        }
-    });
-
-    // Convert to an array and log it
-    console.log(`Unique menu items in ${mainMenu.id}:`, Array.from(uniqueMenuItems));
+  });
 });
-});
+
+
 </script>
 <!-- end Simple Custom CSS and JS -->
 <!-- start Simple Custom CSS and JS -->
